@@ -88,6 +88,36 @@ export function getComprador(id) {
   return loadDB().compradores.find((c) => c.id === id) || null
 }
 
+// Alta de tienda definida por el usuario (demo: vive en localStorage).
+// Devuelve la tienda creada, o null si el nombre viene vacío.
+export function addTienda({ nombre, color = '#64748B' }) {
+  const db = loadDB()
+  const nombreLimpio = String(nombre || '').trim()
+  if (!nombreLimpio) return null
+  // id tipo "slug" a partir del nombre, garantizado único
+  const base =
+    nombreLimpio
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') || 'tienda'
+  let id = base
+  let n = 2
+  while (db.tiendas.some((t) => t.id === id)) id = `${base}-${n++}`
+  const nueva = { id, nombre: nombreLimpio, color }
+  db.tiendas.push(nueva)
+  saveDB(db)
+  return nueva
+}
+
+// Borra una tienda definida por el usuario (no toca sus ofertas existentes).
+export function deleteTienda(id) {
+  const db = loadDB()
+  db.tiendas = db.tiendas.filter((t) => t.id !== id)
+  saveDB(db)
+}
+
 // ---------- Ofertas ----------
 
 export function getOfertas({ tiendaId = null, categoria = null } = {}) {

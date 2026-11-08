@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Modal from './Modal'
-import { TIENDAS, CATEGORIAS } from '../data/mockData'
-import { addOferta, updateOferta } from '../services/dataService'
+import { CATEGORIAS } from '../data/mockData'
+import { addOferta, updateOferta, getTiendas, addTienda } from '../services/dataService'
 import { useApp } from '../context/AppContext'
 
 const vacia = {
@@ -11,8 +11,29 @@ const vacia = {
 
 // Formulario reutilizable para publicar / editar una oferta.
 export default function OfertaForm({ open, onClose, ofertaEdit = null }) {
-  const { notificar, compradorId } = useApp()
+  const { notificar, compradorId, tick } = useApp()
   const [form, setForm] = useState(ofertaEdit || vacia)
+
+  // tick refresca la lista de tiendas cuando se agrega una nueva
+  void tick
+  const tiendas = getTiendas()
+
+  // Mini-formulario para dar de alta una tienda sin salir de aquí
+  const [nuevaTienda, setNuevaTienda] = useState(null) // null = oculto
+  const guardarTienda = () => {
+    const creada = addTienda({
+      nombre: nuevaTienda.nombre,
+      color: nuevaTienda.color,
+    })
+    if (!creada) {
+      notificar('Escribe el nombre de la tienda', 'error')
+      return
+    }
+    // Deja seleccionada la tienda recién creada y cierra el mini-form
+    setForm((f) => ({ ...f, tiendaId: creada.id }))
+    setNuevaTienda(null)
+    notificar(`Tienda "${creada.nombre}" agregada`, 'ok')
+  }
 
   // Reinicia el formulario cada vez que cambia la oferta a editar
   const key = ofertaEdit?.id || 'nueva'
@@ -84,12 +105,56 @@ export default function OfertaForm({ open, onClose, ofertaEdit = null }) {
         </div>
 
         <div>
-          <label className="label">Tienda</label>
+          <div className="flex items-center justify-between">
+            <label className="label">Tienda</label>
+            <button
+              type="button"
+              onClick={() =>
+                setNuevaTienda(nuevaTienda ? null : { nombre: '', color: '#F23A4A' })
+              }
+              className="mb-1 text-xs font-bold text-acento"
+            >
+              {nuevaTienda ? 'Cancelar' : '+ Nueva tienda'}
+            </button>
+          </div>
           <select className="input" value={form.tiendaId} onChange={set('tiendaId')}>
-            {TIENDAS.map((t) => (
+            {tiendas.map((t) => (
               <option key={t.id} value={t.id}>{t.nombre}</option>
             ))}
           </select>
+
+          {nuevaTienda && (
+            <div className="mt-2 rounded-xl border border-marino/15 bg-marino/5 p-3">
+              <label className="label">Nombre de la tienda</label>
+              <div className="flex items-center gap-2">
+                <input
+                  className="input flex-1"
+                  value={nuevaTienda.nombre}
+                  onChange={(e) =>
+                    setNuevaTienda((n) => ({ ...n, nombre: e.target.value }))
+                  }
+                  placeholder="Ej: Costco, Best Buy, Amazon USA"
+                  autoFocus
+                />
+                <input
+                  type="color"
+                  value={nuevaTienda.color}
+                  onChange={(e) =>
+                    setNuevaTienda((n) => ({ ...n, color: e.target.value }))
+                  }
+                  className="h-10 w-12 shrink-0 cursor-pointer rounded-lg border border-marino/15 bg-white"
+                  title="Color de la tienda"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={guardarTienda}
+                className="btn-accent mt-2 w-full text-xs"
+              >
+                Agregar tienda
+              </button>
+            </div>
+          )}
         </div>
 
         <div>

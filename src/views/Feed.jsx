@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../context/AppContext'
-import { getOfertas, deleteOferta } from '../services/dataService'
-import { TIENDAS, CATEGORIAS } from '../data/mockData'
+import { getOfertas, deleteOferta, getTiendas } from '../services/dataService'
+import { CATEGORIAS } from '../data/mockData'
 import { fechaLarga, diaClave } from '../utils/format'
 import OfertaCard from '../components/OfertaCard'
 import OfertaForm from '../components/OfertaForm'
@@ -17,6 +17,7 @@ export default function Feed() {
   // tick fuerza recomputar cuando cambian los datos
   void tick
   const ofertas = getOfertas({ tiendaId: tienda, categoria })
+  const tiendas = getTiendas()
 
   // Agrupar por día (historial navegable)
   const porDia = ofertas.reduce((acc, o) => {
@@ -53,7 +54,7 @@ export default function Feed() {
       {/* Filtros por tienda */}
       <div className="no-scrollbar -mx-4 mb-2 flex gap-2 overflow-x-auto px-4 pb-1">
         <FiltroChip activo={!tienda} onClick={() => setTienda(null)} label="Todas" />
-        {TIENDAS.map((t) => (
+        {tiendas.map((t) => (
           <FiltroChip
             key={t.id}
             activo={tienda === t.id}
