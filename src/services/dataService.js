@@ -21,7 +21,8 @@ import { SEED } from '../data/mockData'
 
 // Nota: al cambiar el modelo de datos (precios USD, fotos, etc.) se sube la
 // versión de la clave para que el demo se resiembre con los datos nuevos.
-const KEY = 'deusa_demo_v6'
+// v7: usuarios con permisos, domicilios del cliente y evidencia de entrega.
+const KEY = 'deusa_demo_v7'
 
 // ---------- Infraestructura de almacenamiento ----------
 
@@ -78,6 +79,58 @@ export function getClientes() {
 
 export function getCliente(id) {
   return loadDB().clientes.find((c) => c.id === id) || null
+}
+
+// ---------- Usuarios del equipo (staff con permisos) ----------
+
+export function getUsuarios() {
+  return loadDB().usuarios || []
+}
+
+export function getUsuario(id) {
+  return (loadDB().usuarios || []).find((u) => u.id === id) || null
+}
+
+// ---------- Domicilios del cliente ----------
+// Viven dentro de cada cliente (cliente.domicilios).
+
+export function getDomicilios(clienteId) {
+  const c = loadDB().clientes.find((x) => x.id === clienteId)
+  return (c && c.domicilios) || []
+}
+
+export function getDomicilio(clienteId, domicilioId) {
+  return getDomicilios(clienteId).find((d) => d.id === domicilioId) || null
+}
+
+export function addDomicilio(clienteId, data) {
+  const db = loadDB()
+  const c = db.clientes.find((x) => x.id === clienteId)
+  if (!c) return null
+  const nuevo = { id: uid('dom'), ...data }
+  c.domicilios = c.domicilios || []
+  c.domicilios.push(nuevo)
+  saveDB(db)
+  return nuevo
+}
+
+export function updateDomicilio(clienteId, domicilioId, cambios) {
+  const db = loadDB()
+  const c = db.clientes.find((x) => x.id === clienteId)
+  if (!c || !c.domicilios) return null
+  const i = c.domicilios.findIndex((d) => d.id === domicilioId)
+  if (i === -1) return null
+  c.domicilios[i] = { ...c.domicilios[i], ...cambios }
+  saveDB(db)
+  return c.domicilios[i]
+}
+
+export function deleteDomicilio(clienteId, domicilioId) {
+  const db = loadDB()
+  const c = db.clientes.find((x) => x.id === clienteId)
+  if (!c || !c.domicilios) return
+  c.domicilios = c.domicilios.filter((d) => d.id !== domicilioId)
+  saveDB(db)
 }
 
 export function getTienda(id) {
@@ -173,7 +226,7 @@ export function getPedido(id) {
 }
 
 // items: [{ofertaId, cantidad}] proveniente del carrito
-export function addPedido({ clienteId, fechaViaje, items, compradorId = null, comision = 0 }) {
+export function addPedido({ clienteId, fechaViaje, items, compradorId = null, comision = 0, domicilioId = null }) {
   const db = loadDB()
   const itemsExpandidos = items.map((it) => {
     const of = db.ofertas.find((o) => o.id === it.ofertaId)
@@ -193,6 +246,7 @@ export function addPedido({ clienteId, fechaViaje, items, compradorId = null, co
     id: uid('p'),
     clienteId,
     compradorId,
+    domicilioId,
     fechaViaje,
     estado: 'solicitado',
     createdAt: new Date().toISOString(),
@@ -200,11 +254,45 @@ export function addPedido({ clienteId, fechaViaje, items, compradorId = null, co
     comision,
     precioCompraTotal: null,
     ticketFoto: null,
+    entrega: null,
     abonos: [],
   }
   db.pedidos.push(nuevo)
   saveDB(db)
   return nuevo
+}
+
+// Pedidos listos para entregar (en_camino) — para la pantalla de Entregas.
+export function getPedidosPorEntregar() {
+  return loadDB()
+    .pedidos.filter((p) => p.estado === 'en_camino')
+    .sort((a, b) => new Date(a.fechaViaje) - new Date(b.fechaViaje))
+}
+
+// Registra la entrega con su evidencia y marca el pedido como entregado.
+// evidencia: { foto, firma, lat, lng, firmante, registradaPor }
+//   foto/firma son dataURL (base64) comprimidos; pueden ser null.
+// Idempotente: si ya está entregado, no reescribe la evidencia previa.
+export function registrarEntrega(pedidoId, { foto = null, firma = null, lat = null, lng = null, firmante, registradaPor = null }) {
+  const db = loadDB()
+  const i = db.pedidos.findIndex((p) => p.id === pedidoId)
+  if (i === -1) return null
+  if (db.pedidos[i].estado === 'entregado' && db.pedidos[i].entrega) return db.pedidos[i]
+  db.pedidos[i] = {
+    ...db.pedidos[i],
+    estado: 'entregado',
+    entrega: {
+      foto,
+      firma,
+      lat,
+      lng,
+      firmante: firmante || '',
+      ts: new Date().toISOString(),
+      registradaPor,
+    },
+  }
+  saveDB(db)
+  return db.pedidos[i]
 }
 
 export function updatePedido(id, cambios) {

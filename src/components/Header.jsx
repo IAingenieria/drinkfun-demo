@@ -1,30 +1,31 @@
 import { useState } from 'react'
-import { useApp, ROLES } from '../context/AppContext'
-import { getClientes, getCompradores, resetDemo } from '../services/dataService'
+import { useApp, ROL_INFO, CUENTAS } from '../context/AppContext'
+import { resetDemo } from '../services/dataService'
 import Modal from './Modal'
 import Icon from './Icon'
 import { LOGO_DRINKFUN } from '../assets/logo'
 
+const STAFF = CUENTAS.filter((c) => c.tipo !== 'cliente')
+const CLIENTES_CTA = CUENTAS.filter((c) => c.tipo === 'cliente')
+const ETIQUETA_TIPO = { dueno: 'Dueño', colaborador: 'Colaborador', cliente: 'Cliente' }
+
 export default function Header() {
   const {
+    usuarioId, setUsuario, cuenta, rolesDisponibles,
     rol, setRol,
-    clienteId, setClienteId,
-    compradorId, setCompradorId,
     notificaciones, marcarNotisLeidas,
   } = useApp()
   const [openNotis, setOpenNotis] = useState(false)
 
-  const clientes = getClientes()
-  const compradores = getCompradores()
   const noLeidas = notificaciones.filter((n) => !n.leida).length
 
   return (
     <header className="sticky top-0 z-40 bg-white shadow-soft">
-      {/* Franja bandera decorativa */}
+      {/* Franja de marca (Tinta → Coral) */}
       <div className="flag-stripe h-1 w-full" />
 
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-2.5">
-        {/* Logo Drink Fun (DF) — Base64 */}
+        {/* Logo Drink Fun (DF) */}
         <img
           src={LOGO_DRINKFUN}
           alt="Drink Fun (DF)"
@@ -49,47 +50,58 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Selector de rol (simulado, sin login) */}
-      <div className="mx-auto flex max-w-2xl items-center gap-2 px-4 pb-3">
-        <div className="flex flex-1 gap-1 rounded-xl bg-marino/5 p-1">
-          {ROLES.map((r) => (
-            <button
-              key={r.id}
-              onClick={() => setRol(r.id)}
-              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold transition-all duration-100 ${
-                rol === r.id
-                  ? 'bg-gradient-to-b from-marino-light to-marino text-white shadow-[0_3px_0_#101a3c,0_5px_10px_rgba(16,25,58,0.3)]'
-                  : 'text-marino/60 hover:bg-marino/5'
-              }`}
-            >
-              <Icon name={r.icon} className="h-4 w-4" strokeWidth={2} />
-              {r.nombre}
-            </button>
-          ))}
+      {/* ¿Quién eres? (cuenta activa) + vista según permisos */}
+      <div className="mx-auto flex max-w-2xl flex-col gap-2 px-4 pb-3">
+        <div className="flex items-center gap-2">
+          <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-marino/50">
+            Entras como
+          </span>
+          <select
+            value={usuarioId}
+            onChange={(e) => setUsuario(e.target.value)}
+            className="min-w-0 flex-1 rounded-lg border border-marino/15 bg-white px-2 py-2 text-sm font-semibold text-marino outline-none"
+          >
+            <optgroup label="Equipo">
+              {STAFF.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre} — {ETIQUETA_TIPO[c.tipo] || 'Equipo'}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Clientes">
+              {CLIENTES_CTA.map((c) => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </optgroup>
+          </select>
         </div>
 
-        {/* Selector de identidad según rol */}
-        {rol === 'cliente' && (
-          <select
-            value={clienteId}
-            onChange={(e) => setClienteId(e.target.value)}
-            className="max-w-[42%] rounded-lg border border-marino/15 bg-white px-2 py-2 text-xs font-semibold text-marino outline-none"
-          >
-            {clientes.map((c) => (
-              <option key={c.id} value={c.id}>{c.nombre}</option>
-            ))}
-          </select>
-        )}
-        {rol === 'comprador' && (
-          <select
-            value={compradorId}
-            onChange={(e) => setCompradorId(e.target.value)}
-            className="max-w-[42%] rounded-lg border border-marino/15 bg-white px-2 py-2 text-xs font-semibold text-marino outline-none"
-          >
-            {compradores.map((c) => (
-              <option key={c.id} value={c.id}>{c.nombre}</option>
-            ))}
-          </select>
+        {/* Selector de vista: solo si la cuenta tiene más de un rol */}
+        {rolesDisponibles.length > 1 && (
+          <div className="flex items-center gap-2">
+            <span className="shrink-0 text-xs font-semibold uppercase tracking-wide text-marino/50">
+              Ver como
+            </span>
+            <div className="flex flex-1 gap-1 rounded-xl bg-marino/5 p-1">
+              {rolesDisponibles.map((rid) => {
+                const info = ROL_INFO[rid]
+                return (
+                  <button
+                    key={rid}
+                    onClick={() => setRol(rid)}
+                    className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-bold transition-all duration-100 ${
+                      rol === rid
+                        ? 'bg-gradient-to-b from-marino-light to-marino text-white shadow-[0_3px_0_#0e1620,0_5px_10px_rgba(14,22,32,0.3)]'
+                        : 'text-marino/60 hover:bg-marino/5'
+                    }`}
+                  >
+                    <Icon name={info.icon} className="h-4 w-4" strokeWidth={2} />
+                    {info.nombre}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         )}
       </div>
 
@@ -112,7 +124,6 @@ export default function Header() {
           </ul>
         )}
         <p className="mt-3 text-center text-[11px] text-marino/40">
-          {/* FUTURO: estas notificaciones se enviarían también por WhatsApp */}
           Demo: notificaciones dentro de la app (WhatsApp pendiente).
         </p>
 

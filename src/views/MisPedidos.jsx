@@ -1,5 +1,6 @@
 import { useApp } from '../context/AppContext'
-import { getPedidos, getTienda, totalVenta, totalAbonado, saldoPedido } from '../services/dataService'
+import { getPedidos, getTienda, getDomicilio, totalVenta, totalAbonado, saldoPedido } from '../services/dataService'
+import { enlaceMapa } from '../utils/evidencia'
 import { EstadoBadge, ItemBadge } from '../components/StatusBadge'
 import Icon from '../components/Icon'
 import { money, fechaCorta } from '../utils/format'
@@ -98,6 +99,46 @@ export default function MisPedidos() {
                   <div className="font-bold text-acento">{money(saldoPedido(p))}</div>
                 </div>
               </div>
+
+              {/* Domicilio de entrega */}
+              {(() => {
+                const dom = getDomicilio(p.clienteId, p.domicilioId)
+                if (!dom) return null
+                return (
+                  <p className="mt-3 flex items-start gap-1.5 text-xs text-marino/60">
+                    <Icon name="pin" className="mt-0.5 h-3.5 w-3.5 shrink-0 text-acento" />
+                    <span>Entrega en <b className="text-marino">{dom.etiqueta}</b> · {dom.calle}{dom.ciudad ? `, ${dom.ciudad}` : ''}</span>
+                  </p>
+                )
+              })()}
+
+              {/* Evidencia de entrega (cuando ya se entregó) */}
+              {p.entrega && (
+                <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3">
+                  <p className="flex items-center gap-1.5 text-xs font-bold text-green-700">
+                    <Icon name="check" className="h-4 w-4" strokeWidth={2.6} />
+                    Entregado{p.entrega.firmante ? ` · recibió ${p.entrega.firmante}` : ''}
+                  </p>
+                  {p.entrega.ts && (
+                    <p className="pl-5 text-[11px] text-green-700/70">{fechaCorta(p.entrega.ts)}</p>
+                  )}
+                  {(p.entrega.foto || p.entrega.firma) && (
+                    <div className="mt-2 flex gap-2">
+                      {p.entrega.foto && (
+                        <img src={p.entrega.foto} alt="foto de entrega" className="h-20 w-20 rounded-lg object-cover ring-1 ring-green-200" />
+                      )}
+                      {p.entrega.firma && (
+                        <img src={p.entrega.firma} alt="firma" className="h-20 w-28 rounded-lg bg-white object-contain ring-1 ring-green-200" />
+                      )}
+                    </div>
+                  )}
+                  {p.entrega.lat != null && (
+                    <a href={enlaceMapa(p.entrega.lat, p.entrega.lng)} target="_blank" rel="noreferrer" className="mt-1 inline-block text-[11px] font-semibold text-green-700">
+                      📍 Ver ubicación de la entrega
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           )
         })}

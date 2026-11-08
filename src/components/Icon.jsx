@@ -95,6 +95,26 @@ const paths = {
       <circle cx="12" cy="13" r="3.2" />
     </>
   ),
+  truck: (
+    <>
+      <rect x="2.5" y="6" width="11" height="9" rx="1" />
+      <path d="M13.5 9h3.8l3.2 3.2V15h-7Z" />
+      <circle cx="7" cy="18" r="1.6" />
+      <circle cx="17" cy="18" r="1.6" />
+    </>
+  ),
+  pin: (
+    <>
+      <path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z" />
+      <circle cx="12" cy="11" r="2.2" />
+    </>
+  ),
+  signature: (
+    <>
+      <path d="M3 17c3 0 3-10 6-10s0 8 3 8 2-6 4-6 1 4 5 4" />
+      <path d="M3 21h18" />
+    </>
+  ),
   check: (<path d="m5 13 4 4L19 7" />),
   x: (<><path d="M6 6l12 12" /><path d="M18 6 6 18" /></>),
   arrowRight: (<><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>),

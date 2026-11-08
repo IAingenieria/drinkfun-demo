@@ -2,10 +2,7 @@
 // mockData.js — Datos semilla del DEMO (NO es una base de datos).
 // Se cargan en localStorage la primera vez (ver dataService.js).
 //
-// IMÁGENES: fotos reales de producto alojadas en Cloudinary (CDN estable),
-// proporcionadas para el demo. Con 9 fotos únicas para 12 productos, casi
-// todos tienen foto propia (3 se reutilizan de forma coherente por tipo).
-//
+// IMÁGENES: fotos reales de producto alojadas en Cloudinary (CDN estable).
 // PRECIOS: en dólares (USD), realistas para tiendas de USA.
 // ============================================================================
 
@@ -37,7 +34,6 @@ export const CATEGORIAS = [
 ]
 
 // Tipo de cambio por defecto (MXN por 1 USD) para abonos en pesos.
-// Es editable en cada abono; aquí solo se sugiere.
 export const TIPO_CAMBIO_MXN = 18.5
 
 // Estados de un pedido completo
@@ -46,78 +42,110 @@ export const ESTADOS_PEDIDO = ['solicitado', 'comprado', 'en_camino', 'entregado
 // Estados de un ítem dentro del pedido (para la lista del comprador)
 export const ESTADOS_ITEM = ['pendiente', 'comprado', 'agotado', 'sustituido']
 
-// ---- Personas ----
-export const COMPRADORES = [
-  { id: 'c-olga', nombre: 'Olga', rol: 'comprador', zona: 'McAllen, TX' },
-  { id: 'c-luis', nombre: 'Javier', rol: 'comprador', zona: 'Laredo, TX' },
+// ---- Usuarios del equipo (staff) ----
+// Cada quien entra con los ROLES que tiene permitidos.
+//  - Nelly y Santiago (dueños): ven Dueño y Comprador.
+//  - Goyo (colaborador): solo Comprador (puede ir a comprar).
+export const USUARIOS = [
+  { id: 'u-nelly', nombre: 'Nelly Sandoval', roles: ['dueno', 'comprador'], tipo: 'dueno', zona: 'McAllen, TX' },
+  { id: 'u-santiago', nombre: 'Santiago Garza', roles: ['dueno', 'comprador'], tipo: 'dueno', zona: 'Laredo, TX' },
+  { id: 'u-goyo', nombre: 'Goyo Sandoval', roles: ['comprador'], tipo: 'colaborador', zona: 'McAllen, TX' },
 ]
 
+// Compradores = usuarios que pueden comprar (para selectores de "quién compra")
+export const COMPRADORES = USUARIOS.filter((u) => u.roles.includes('comprador'))
+
+// ---- Clientes (con sus domicilios de entrega) ----
 export const CLIENTES = [
-  { id: 'cl-ana', nombre: 'Ana Rodríguez', telefono: '+52 55 1234 5678', ciudad: 'Monterrey' },
-  { id: 'cl-beto', nombre: 'Beto Martínez', telefono: '+52 81 2345 6789', ciudad: 'Reynosa' },
-  { id: 'cl-carmen', nombre: 'Carmen Silva', telefono: '+52 33 3456 7890', ciudad: 'Guadalajara' },
+  {
+    id: 'cl-ana', nombre: 'Ana Rodríguez', telefono: '+52 55 1234 5678', ciudad: 'Monterrey',
+    domicilios: [
+      {
+        id: 'dom-ana-1', etiqueta: 'Casa', calle: 'Río Nazas 123', colonia: 'Del Valle',
+        ciudad: 'Monterrey', referencia: 'Portón negro, timbre a la derecha',
+        lat: 25.6512, lng: -100.3561,
+      },
+      {
+        id: 'dom-ana-2', etiqueta: 'Oficina', calle: 'Av. Lázaro Cárdenas 2400', colonia: 'Valle Oriente',
+        ciudad: 'San Pedro', referencia: 'Torre B, recepción piso 3',
+        lat: 25.6407, lng: -100.3089,
+      },
+    ],
+  },
+  {
+    id: 'cl-beto', nombre: 'Beto Martínez', telefono: '+52 81 2345 6789', ciudad: 'Reynosa',
+    domicilios: [
+      {
+        id: 'dom-beto-1', etiqueta: 'Casa', calle: 'Blvd. Hidalgo 980', colonia: 'Las Fuentes',
+        ciudad: 'Reynosa', referencia: 'Casa azul de dos pisos',
+        lat: 26.0923, lng: -98.2779,
+      },
+    ],
+  },
+  // Carmen entra SIN domicilio: sirve para demostrar el alta desde la app.
+  { id: 'cl-carmen', nombre: 'Carmen Silva', telefono: '+52 33 3456 7890', ciudad: 'Guadalajara', domicilios: [] },
 ]
 
 // ---- Ofertas (12) — precios en USD, fotos reales ----
 export const OFERTAS = [
   {
     id: 'of-1', titulo: 'Mochila Transparente Cristal', precio: 22.99, tiendaId: 'target',
-    categoria: 'mochilas', foto: IMG.mochilaCristal, publicadoPor: 'c-olga',
+    categoria: 'mochilas', foto: IMG.mochilaCristal, publicadoPor: 'u-nelly',
     descripcion: 'Mochila transparente para estadios/escuela.', createdAt: '2026-07-24T15:00:00',
   },
   {
     id: 'of-2', titulo: 'Mochila Deportiva Azul', precio: 34.99, tiendaId: 'target',
-    categoria: 'mochilas', foto: IMG.mochilaAzul, publicadoPor: 'c-olga',
+    categoria: 'mochilas', foto: IMG.mochilaAzul, publicadoPor: 'u-nelly',
     descripcion: 'Amplia, con bolsas laterales y cordón elástico.', createdAt: '2026-07-24T15:10:00',
   },
   {
     id: 'of-3', titulo: 'Mochila Leopardo Escolar', precio: 26.99, tiendaId: 'target',
-    categoria: 'mochilas', foto: IMG.mochilaLeopardo, publicadoPor: 'c-olga',
+    categoria: 'mochilas', foto: IMG.mochilaLeopardo, publicadoPor: 'u-nelly',
     descripcion: 'Estampado animal print con moño rosa.', createdAt: '2026-07-24T16:00:00',
   },
   {
     id: 'of-4', titulo: 'Termo Stanley IceFlow 30oz', precio: 39.99, tiendaId: 'target',
-    categoria: 'otros', foto: IMG.termoStanley, publicadoPor: 'c-olga',
+    categoria: 'otros', foto: IMG.termoStanley, publicadoPor: 'u-nelly',
     descripcion: 'Acero inoxidable con popote, color crema.', createdAt: '2026-07-25T14:00:00',
   },
   {
     id: 'of-5', titulo: 'Magnesio Nature Made 200mg', precio: 12.99, tiendaId: 'walmart',
-    categoria: 'salud', foto: IMG.magnesio, publicadoPor: 'c-olga',
+    categoria: 'salud', foto: IMG.magnesio, publicadoPor: 'u-nelly',
     descripcion: 'Glicinato de magnesio, 60 cápsulas.', createdAt: '2026-07-25T14:20:00',
   },
   {
     id: 'of-6', titulo: 'Camisa Hawaiana Roja', precio: 24.99, tiendaId: 'ross',
-    categoria: 'ropa', foto: IMG.camisaHawaiana, publicadoPor: 'c-luis',
+    categoria: 'ropa', foto: IMG.camisaHawaiana, publicadoPor: 'u-goyo',
     descripcion: 'Manga corta, estampado floral tropical.', createdAt: '2026-07-25T14:30:00',
   },
   {
     id: 'of-7', titulo: 'Camisa Oxford de Rayas', precio: 21.99, tiendaId: 'ross',
-    categoria: 'ropa', foto: IMG.camisaRayas, publicadoPor: 'c-luis',
+    categoria: 'ropa', foto: IMG.camisaRayas, publicadoPor: 'u-goyo',
     descripcion: 'Manga larga, algodón, rayas azul claro.', createdAt: '2026-07-25T15:00:00',
   },
   {
     id: 'of-8', titulo: 'Suéter Bandera USA', precio: 29.99, tiendaId: 'ross',
-    categoria: 'ropa', foto: IMG.sueterUSA, publicadoPor: 'c-olga',
+    categoria: 'ropa', foto: IMG.sueterUSA, publicadoPor: 'u-nelly',
     descripcion: 'Tejido crema con bandera al frente.', createdAt: '2026-07-25T15:10:00',
   },
   {
     id: 'of-9', titulo: 'Blusa Roja Floral', precio: 19.99, tiendaId: 'ross',
-    categoria: 'ropa', foto: IMG.blusaRoja, publicadoPor: 'c-luis',
+    categoria: 'ropa', foto: IMG.blusaRoja, publicadoPor: 'u-goyo',
     descripcion: 'Blusa manga larga estampado floral.', createdAt: '2026-07-26T13:00:00',
   },
   {
     id: 'of-10', titulo: 'Mochila Cristal con Tenis', precio: 24.99, tiendaId: 'walmart',
-    categoria: 'mochilas', foto: IMG.mochilaCristal, publicadoPor: 'c-luis',
+    categoria: 'mochilas', foto: IMG.mochilaCristal, publicadoPor: 'u-goyo',
     descripcion: 'Transparente, incluye bolsa de malla.', createdAt: '2026-07-26T13:20:00',
   },
   {
     id: 'of-11', titulo: 'Termo Térmico Acero 30oz', precio: 29.98, tiendaId: 'walmart',
-    categoria: 'otros', foto: IMG.termoStanley, publicadoPor: 'c-olga',
+    categoria: 'otros', foto: IMG.termoStanley, publicadoPor: 'u-nelly',
     descripcion: 'Popote y asa, mantiene frío 2 días.', createdAt: '2026-07-26T13:40:00',
   },
   {
     id: 'of-12', titulo: 'Magnesio Glicinato 60 caps', precio: 14.98, tiendaId: 'walmart',
-    categoria: 'salud', foto: IMG.magnesio, publicadoPor: 'c-luis',
+    categoria: 'salud', foto: IMG.magnesio, publicadoPor: 'u-goyo',
     descripcion: 'Alta absorción, apoyo muscular.', createdAt: '2026-07-26T14:00:00',
   },
 ]
@@ -134,35 +162,35 @@ const itemDe = (ofId, cantidad, estadoItem = 'pendiente', extra = {}) => {
     precioVenta: of.precio,
     cantidad,
     estadoItem, // pendiente | comprado | agotado | sustituido
-    precioCompraReal: null, // lo captura el dueño con el ticket
+    precioCompraReal: null,
     ...extra,
   }
 }
 
 // ---- Pedidos (4) en distintos estados — montos en USD ----
+// domicilioId: a qué domicilio del cliente se entrega.
+// entrega: evidencia de la entrega (foto/firma/gps/firmante) — null hasta entregar.
 export const PEDIDOS = [
   {
     id: 'p-1001',
     clienteId: 'cl-ana',
-    compradorId: 'c-olga',
+    compradorId: 'u-nelly',
+    domicilioId: 'dom-ana-1',
     fechaViaje: '2026-07-28',
     estado: 'solicitado',
     createdAt: '2026-07-26T10:00:00',
-    items: [
-      itemDe('of-1', 1),
-      itemDe('of-6', 1),
-      itemDe('of-5', 2),
-    ],
+    items: [itemDe('of-1', 1), itemDe('of-6', 1), itemDe('of-5', 2)],
     comision: 10,
     precioCompraTotal: null,
     ticketFoto: null,
-    // Ejemplo: cliente pagó en PESOS. 555 MXN / 18.5 = 30 USD aplicados al saldo.
+    entrega: null,
     abonos: [{ id: 'ab-1', monto: 555, moneda: 'MXN', tipoCambio: 18.5, montoUSD: 30, fecha: '2026-07-26' }],
   },
   {
     id: 'p-1002',
     clienteId: 'cl-beto',
-    compradorId: 'c-luis',
+    compradorId: 'u-goyo',
+    domicilioId: 'dom-beto-1',
     fechaViaje: '2026-07-28',
     estado: 'comprado',
     createdAt: '2026-07-25T09:00:00',
@@ -173,14 +201,16 @@ export const PEDIDOS = [
     comision: 8,
     precioCompraTotal: 50,
     ticketFoto: null,
+    entrega: null,
     abonos: [{ id: 'ab-2', monto: 40, moneda: 'USD', tipoCambio: null, montoUSD: 40, fecha: '2026-07-25' }],
   },
   {
     id: 'p-1003',
-    clienteId: 'cl-carmen',
-    compradorId: 'c-olga',
+    clienteId: 'cl-ana',
+    compradorId: 'u-nelly',
+    domicilioId: 'dom-ana-2',
     fechaViaje: '2026-07-24',
-    estado: 'en_camino',
+    estado: 'en_camino', // listo para ENTREGAR (aparece en la pantalla de Entregas)
     createdAt: '2026-07-23T18:00:00',
     items: [
       itemDe('of-2', 1, 'comprado', { precioCompraReal: 26 }),
@@ -190,16 +220,17 @@ export const PEDIDOS = [
     comision: 12,
     precioCompraTotal: 56,
     ticketFoto: null,
+    entrega: null,
     abonos: [
       { id: 'ab-3', monto: 40, moneda: 'USD', tipoCambio: null, montoUSD: 40, fecha: '2026-07-23' },
-      // Ejemplo: pago en PESOS. 370 MXN / 18.5 = 20 USD aplicados al saldo.
       { id: 'ab-4', monto: 370, moneda: 'MXN', tipoCambio: 18.5, montoUSD: 20, fecha: '2026-07-24' },
     ],
   },
   {
     id: 'p-1004',
-    clienteId: 'cl-ana',
-    compradorId: 'c-luis',
+    clienteId: 'cl-beto',
+    compradorId: 'u-goyo',
+    domicilioId: 'dom-beto-1',
     fechaViaje: '2026-07-20',
     estado: 'entregado',
     createdAt: '2026-07-19T12:00:00',
@@ -210,6 +241,15 @@ export const PEDIDOS = [
     comision: 9,
     precioCompraTotal: 63,
     ticketFoto: null,
+    // Entrega ya registrada (sin foto en la semilla; el firmante y GPS de ejemplo)
+    entrega: {
+      firmante: 'Beto Martínez',
+      foto: null,
+      firma: null,
+      lat: 26.0923, lng: -98.2779,
+      ts: '2026-07-21T17:35:00',
+      registradaPor: 'u-goyo',
+    },
     abonos: [{ id: 'ab-5', monto: 60, moneda: 'USD', tipoCambio: null, montoUSD: 60, fecha: '2026-07-20' }],
   },
 ]
@@ -218,6 +258,7 @@ export const PEDIDOS = [
 export const SEED = {
   tiendas: TIENDAS,
   categorias: CATEGORIAS,
+  usuarios: USUARIOS,
   compradores: COMPRADORES,
   clientes: CLIENTES,
   ofertas: OFERTAS,

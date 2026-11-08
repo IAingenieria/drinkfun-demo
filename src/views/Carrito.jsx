@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
-import { getOferta, getTienda, addPedido, getCliente } from '../services/dataService'
+import { getOferta, getTienda, addPedido, getCliente, getDomicilios } from '../services/dataService'
 import { money } from '../utils/format'
 import Icon from '../components/Icon'
 
@@ -25,13 +25,23 @@ export default function Carrito() {
   const total = subtotal + comision
 
   const cliente = getCliente(clienteId)
+  const domicilios = getDomicilios(clienteId)
+  const [domicilioId, setDomicilioId] = useState(domicilios[0]?.id || '')
+  // Si el estado quedó fuera de la lista (p.ej. recién agregó uno), usa el primero.
+  const domSel = domicilios.find((d) => d.id === domicilioId) ? domicilioId : (domicilios[0]?.id || '')
 
   const confirmar = () => {
     if (lineas.length === 0) return
+    if (domicilios.length === 0) {
+      notificar('Primero agrega un domicilio de entrega', 'error')
+      navigate('/domicilios')
+      return
+    }
     const pedido = addPedido({
       clienteId,
       fechaViaje,
       comision,
+      domicilioId: domSel,
       items: carrito.map((i) => ({ ofertaId: i.ofertaId, cantidad: i.cantidad })),
     })
     vaciarCarrito()
@@ -103,7 +113,24 @@ export default function Carrito() {
 
       {/* Confirmación del viaje */}
       <div className="card mt-4 p-4">
-        <label className="label">Fecha del viaje (cuándo se compra)</label>
+        {/* Domicilio de entrega */}
+        <label className="label">Entregar en</label>
+        {domicilios.length === 0 ? (
+          <button onClick={() => navigate('/domicilios')} className="btn-outline w-full text-sm">
+            <Icon name="pin" className="h-4 w-4" />
+            Agregar un domicilio de entrega
+          </button>
+        ) : (
+          <select className="input" value={domSel} onChange={(e) => setDomicilioId(e.target.value)}>
+            {domicilios.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.etiqueta} — {d.calle}{d.ciudad ? `, ${d.ciudad}` : ''}
+              </option>
+            ))}
+          </select>
+        )}
+
+        <label className="label mt-3">Fecha del viaje (cuándo se compra)</label>
         <input
           type="date"
           value={fechaViaje}

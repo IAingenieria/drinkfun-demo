@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react'
-import { CLIENTES, COMPRADORES } from '../data/mockData'
+import { USUARIOS, CLIENTES } from '../data/mockData'
 
 // ============================================================================
 // AppContext — estado de UI del demo:
-//  - rol activo (dueño / comprador / cliente) simulado con un selector
-//  - identidad activa según rol (qué comprador / qué cliente)
+//  - cuenta activa ("¿quién eres?") con sus ROLES permitidos
+//  - rol/vista activo dentro de los roles de esa cuenta
+//  - identidad derivada (compradorId / clienteId) para el resto de la app
 //  - carrito del cliente
 //  - notificaciones in-app (toasts + panel)
 //  - "tick" que fuerza refresco cuando dataService cambia localStorage
@@ -17,14 +18,39 @@ export const ROLES = [
   { id: 'comprador', nombre: 'Comprador', icon: 'briefcase' },
   { id: 'cliente', nombre: 'Cliente', icon: 'user' },
 ]
+export const ROL_INFO = Object.fromEntries(ROLES.map((r) => [r.id, r]))
+
+// Cuentas que "inician sesión" en el demo: equipo (staff, con permisos) + clientes.
+export const CUENTAS = [
+  ...USUARIOS,
+  ...CLIENTES.map((c) => ({ id: c.id, nombre: c.nombre, roles: ['cliente'], tipo: 'cliente' })),
+]
+
+const cuentaDe = (id) => CUENTAS.find((c) => c.id === id) || CUENTAS[0]
 
 export function AppProvider({ children }) {
-  const [rol, setRol] = useState('cliente')
-  // Identidad activa por rol (por defecto: Olga como compradora, Ana como cliente)
-  const [compradorId, setCompradorId] = useState(
-    COMPRADORES.find((c) => c.nombre === 'Olga')?.id || COMPRADORES[0].id,
-  )
-  const [clienteId, setClienteId] = useState(CLIENTES[0].id)
+  // Cuenta activa (por defecto Nelly, dueña). El rol arranca en su primer permiso.
+  const [usuarioId, setUsuarioId] = useState(USUARIOS[0].id)
+  const [rol, setRolState] = useState(cuentaDe(USUARIOS[0].id).roles[0])
+
+  const cuenta = cuentaDe(usuarioId)
+  const rolesDisponibles = cuenta.roles
+  // Identidad derivada para el resto de la app (sin tocar las vistas existentes)
+  const compradorId = rolesDisponibles.includes('comprador') ? cuenta.id : null
+  const clienteId = cuenta.tipo === 'cliente' ? cuenta.id : null
+
+  // Cambiar de cuenta: resetea el rol/vista al primero permitido y vacía el carrito.
+  const setUsuario = useCallback((id) => {
+    const c = cuentaDe(id)
+    setUsuarioId(id)
+    setRolState(c.roles[0])
+    setCarrito([])
+  }, [])
+
+  // Cambiar de vista (rol), solo si la cuenta tiene ese permiso.
+  const setRol = useCallback((r) => {
+    setRolState((prev) => (cuentaDe(usuarioId).roles.includes(r) ? r : prev))
+  }, [usuarioId])
 
   // Carrito: [{ ofertaId, cantidad }]
   const [carrito, setCarrito] = useState([])
@@ -47,17 +73,10 @@ export function AppProvider({ children }) {
     const noti = { id, mensaje, tipo, fecha: new Date().toISOString(), leida: false }
     setNotificaciones((prev) => [noti, ...prev].slice(0, 50))
     setToasts((prev) => [...prev, noti])
-    // Auto-descartar el toast a los 4s (el registro queda en el panel)
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id))
     }, 4000)
-
-    // ------------------------------------------------------------------
-    // FUTURA INTEGRACIÓN WHATSAPP:
-    // Aquí se dispararía el envío real por WhatsApp Business API / Twilio.
-    // Ej: await enviarWhatsApp(telefonoCliente, mensaje)
-    // Por ahora es solo una notificación dentro de la app.
-    // ------------------------------------------------------------------
+    // FUTURA INTEGRACIÓN WHATSAPP: aquí se enviaría el mensaje real al cliente.
   }, [])
 
   const marcarNotisLeidas = useCallback(() => {
@@ -99,18 +118,23 @@ export function AppProvider({ children }) {
 
   const value = useMemo(
     () => ({
+      // identidad / permisos
+      usuarioId, setUsuario, cuenta, rolesDisponibles,
       rol, setRol,
-      compradorId, setCompradorId,
-      clienteId, setClienteId,
+      compradorId, clienteId,
+      // carrito
       carrito, agregarAlCarrito, cambiarCantidad, quitarDelCarrito, vaciarCarrito,
       totalItemsCarrito,
+      // notificaciones
       notificaciones, notificar, marcarNotisLeidas,
       toasts, cerrarToast,
       tick,
     }),
     [
-      rol, compradorId, clienteId, carrito, totalItemsCarrito,
+      usuarioId, cuenta, rolesDisponibles, rol, compradorId, clienteId,
+      carrito, totalItemsCarrito,
       notificaciones, toasts, tick,
+      setUsuario, setRol,
       agregarAlCarrito, cambiarCantidad, quitarDelCarrito, vaciarCarrito,
       notificar, marcarNotisLeidas, cerrarToast,
     ],

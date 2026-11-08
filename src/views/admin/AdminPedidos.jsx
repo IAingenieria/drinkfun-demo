@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import {
   getPedidos, getCliente, getComprador, setEstadoPedido,
@@ -13,6 +14,7 @@ import { ESTADOS_PEDIDO } from '../../data/mockData'
 
 export default function AdminPedidos() {
   const { tick, notificar } = useApp()
+  const navigate = useNavigate()
   const [filtro, setFiltro] = useState(null)
   const [ticketPedido, setTicketPedido] = useState(null)
   void tick
@@ -23,6 +25,8 @@ export default function AdminPedidos() {
     const i = ESTADOS_PEDIDO.indexOf(p.estado)
     if (i >= ESTADOS_PEDIDO.length - 1) return
     const nuevo = ESTADOS_PEDIDO[i + 1]
+    // El paso a "entregado" se hace en la pantalla de Entregas (con foto/firma).
+    if (nuevo === 'entregado') { navigate('/entregas'); return }
     setEstadoPedido(p.id, nuevo)
     // Notificación simulada del cambio de estado (futuro: WhatsApp al cliente)
     const cli = getCliente(p.clienteId)
@@ -71,7 +75,12 @@ export default function AdminPedidos() {
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
-                {p.estado !== 'entregado' && (
+                {p.estado === 'en_camino' ? (
+                  <button onClick={() => navigate('/entregas')} className="btn-primary flex-1 text-xs">
+                    <Icon name="truck" className="h-4 w-4" strokeWidth={2.2} />
+                    Registrar entrega
+                  </button>
+                ) : p.estado !== 'entregado' && (
                   <button onClick={() => avanzarEstado(p)} className="btn-primary flex-1 text-xs">
                     <Icon name="arrowRight" className="h-4 w-4" strokeWidth={2.2} />
                     Avanzar a {LABEL_ESTADO[ESTADOS_PEDIDO[ESTADOS_PEDIDO.indexOf(p.estado) + 1]]}

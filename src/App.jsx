@@ -7,8 +7,10 @@ import Toasts from './components/Toasts'
 import Feed from './views/Feed'
 import Carrito from './views/Carrito'
 import MisPedidos from './views/MisPedidos'
+import MisDomicilios from './views/MisDomicilios'
 import ListaCompras from './views/ListaCompras'
 import Publicar from './views/Publicar'
+import Entregas from './views/Entregas'
 import AdminPedidos from './views/admin/AdminPedidos'
 import AdminUtilidad from './views/admin/AdminUtilidad'
 import AdminCuentas from './views/admin/AdminCuentas'
@@ -40,6 +42,10 @@ export default function App() {
             path="/mis-pedidos"
             element={<RolGuard permite={['cliente']}><MisPedidos /></RolGuard>}
           />
+          <Route
+            path="/domicilios"
+            element={<RolGuard permite={['cliente']}><MisDomicilios /></RolGuard>}
+          />
 
           {/* Comprador */}
           <Route
@@ -49,6 +55,10 @@ export default function App() {
           <Route
             path="/publicar"
             element={<RolGuard permite={['comprador', 'dueno']}><Publicar /></RolGuard>}
+          />
+          <Route
+            path="/entregas"
+            element={<RolGuard permite={['comprador', 'dueno']}><Entregas /></RolGuard>}
           />
 
           {/* Dueño */}

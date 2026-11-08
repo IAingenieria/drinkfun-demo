@@ -7,16 +7,19 @@ const TABS = {
   cliente: [
     { to: '/', icon: 'tag', label: 'Ofertas', end: true },
     { to: '/carrito', icon: 'cart', label: 'Carrito', badge: 'carrito' },
-    { to: '/mis-pedidos', icon: 'box', label: 'Mis pedidos' },
+    { to: '/mis-pedidos', icon: 'box', label: 'Pedidos' },
+    { to: '/domicilios', icon: 'pin', label: 'Domicilios' },
   ],
   comprador: [
     { to: '/', icon: 'tag', label: 'Ofertas', end: true },
-    { to: '/lista-compras', icon: 'checklist', label: 'Lista compras' },
+    { to: '/lista-compras', icon: 'checklist', label: 'Compras' },
     { to: '/publicar', icon: 'plus', label: 'Publicar' },
+    { to: '/entregas', icon: 'truck', label: 'Entregas' },
   ],
   dueno: [
     { to: '/', icon: 'tag', label: 'Ofertas', end: true },
     { to: '/admin/pedidos', icon: 'box', label: 'Pedidos' },
+    { to: '/entregas', icon: 'truck', label: 'Entregas' },
     { to: '/admin/utilidad', icon: 'chart', label: 'Utilidad' },
     { to: '/admin/cuentas', icon: 'receipt', label: 'Cuentas' },
   ],
