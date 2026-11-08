@@ -3,7 +3,7 @@ import { useApp, ROLES } from '../context/AppContext'
 import { getClientes, getCompradores, resetDemo } from '../services/dataService'
 import Modal from './Modal'
 import Icon from './Icon'
-import { LOGO_DEUSA } from '../assets/logo'
+import { LOGO_DRINKFUN } from '../assets/logo'
 
 export default function Header() {
   const {
@@ -24,11 +24,11 @@ export default function Header() {
       <div className="flag-stripe h-1 w-full" />
 
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-2 px-4 py-2.5">
-        {/* Logo real de DeUSA (Base64) */}
+        {/* Logo Drink Fun (DF) — Base64 */}
         <img
-          src={LOGO_DEUSA}
-          alt="DeUSA – Cross Border Shopping & Logistics"
-          className="h-11 w-auto object-contain"
+          src={LOGO_DRINKFUN}
+          alt="Drink Fun (DF)"
+          className="h-12 w-auto object-contain"
         />
 
         {/* Campana de notificaciones */}
