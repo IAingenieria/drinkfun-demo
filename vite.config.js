@@ -12,6 +12,9 @@ export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     VitePWA({
+      // Demo en iteración: el SW se auto-desinstala y limpia cachés viejas,
+      // para que cada recarga traiga siempre la última versión (sin pelear con la PWA).
+      selfDestroying: true,
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'logo_deusa.png'],
       manifest: {
