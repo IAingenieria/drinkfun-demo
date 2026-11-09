@@ -16,12 +16,12 @@ export default function OfertaCard({ oferta, onEdit, onDelete }) {
 
   return (
     <div className="card overflow-hidden">
-      <div className="relative aspect-square w-full bg-marino/5">
+      <div className="relative aspect-square w-full bg-white">
         <img
           src={oferta.foto}
           alt={oferta.titulo}
           loading="lazy"
-          className="h-full w-full object-cover"
+          className="h-full w-full object-contain p-2"
         />
         {/* Etiqueta de tienda con punto de color */}
         <span

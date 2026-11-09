@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Modal from './Modal'
+import CapturaFoto from './CapturaFoto'
 import { CATEGORIAS } from '../data/mockData'
 import { addOferta, updateOferta, getTiendas, addTienda } from '../services/dataService'
 import { useApp } from '../context/AppContext'
@@ -158,8 +159,32 @@ export default function OfertaForm({ open, onClose, ofertaEdit = null }) {
         </div>
 
         <div>
-          <label className="label">Foto (URL opcional)</label>
-          <input className="input" value={form.foto} onChange={set('foto')} placeholder="https://... (si se deja vacío se genera una)" />
+          <label className="label">Foto del producto</label>
+          {form.foto && (
+            <img
+              src={form.foto}
+              alt="producto"
+              className="mb-2 max-h-44 w-full rounded-lg bg-white object-contain ring-1 ring-marino/10"
+            />
+          )}
+          <div className="flex gap-2">
+            <CapturaFoto
+              onFoto={({ dataUrl }) => dataUrl && setForm((f) => ({ ...f, foto: dataUrl }))}
+              label={form.foto ? 'Tomar otra' : 'Tomar foto con la cámara'}
+              className="btn-outline flex-1 text-sm"
+            />
+            {form.foto && (
+              <button type="button" onClick={() => setForm((f) => ({ ...f, foto: '' }))} className="btn-outline text-sm text-acento">
+                Quitar
+              </button>
+            )}
+          </div>
+          <input
+            className="input mt-2"
+            value={form.foto.startsWith('data:') ? '' : form.foto}
+            onChange={set('foto')}
+            placeholder="o pega una URL de imagen (opcional)"
+          />
         </div>
 
         <div>
